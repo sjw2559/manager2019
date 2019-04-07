@@ -2,13 +2,31 @@
 
 int load_file(LOGIN* list[], char* filename){
   int count=0;
+  int num;
+  char temp[20];
   FILE *datafile = fopen(filename, "r");
-  while(!feof(datafile)){
+  if(datafile==NULL){
+	printf("%s file not exist! make anyway (Yes 1, No 2) >> ",filename);
+	scanf("%d",&num);
+	if(num==2) return -1;	
+	else{
+	 datafile = fopen(filename,"w+");
+	}
+  }
+  #ifdef DEBUG_MODE
+	printf("DEBUG>> datafile opened!\n");
+  #endif 
+  while((fgets(temp,100,datafile))!=NULL){
     list[count]=(LOGIN*)malloc(sizeof(LOGIN));
-    fscanf(datafile,"%s %s",list[count]->id,list[count]->password);
+    if(temp[strlen(temp)-1]=='\n'){
+    	temp[strlen(temp)-1]='\0';
+    }
+    strcpy(list[count]->id,strtok(temp," "));
+    strcpy(list[count]->password,strtok(NULL," "));
     count++;
   }
-  printf("%d records read!\n",count);\
+  if(count!=0) printf("> Welcome!! %d records read!\n",count);
+  else printf("> Welcome!!\n");
   fclose(datafile);
   return count;
 }
@@ -69,6 +87,12 @@ int login(LOGIN* list[], int count){
   }
 }
 
+void list(LOGIN* list[], int count){
+ for(int i=0; i<count; i++){
+   printf("[%d] %s %s\n",i+1,list[i]->id,list[i]->password);
+ }
+}
+
 void logout(int* is_login){
   *is_login = 0;
   printf("Logout!!\n");
@@ -79,6 +103,6 @@ void save_file(LOGIN* list[], int count, char* filename){
   for(int i=0; i<count; i++){
     fprintf(datafile, "%s %s\n", list[i]->id, list[i]->password);
   }
-  printf("%s Saved!\n", filename);
+  printf("%d records saved to %s!\n",count, filename);
   fclose(datafile);
 }
